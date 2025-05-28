@@ -121,3 +121,143 @@ func (c *ExaminationItemController) Delete(ctx *gin.Context) {
 
 	ctx.JSON(http.StatusOK, gin.H{"message": "记录删除成功"})
 }
+
+// CreateMaterial 创建材料记录
+func (c *ExaminationItemController) CreateMaterial(ctx *gin.Context) {
+	var material models.Material
+	if err := ctx.ShouldBindJSON(&material); err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	if err := c.itemService.CreateMaterial(&material); err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	ctx.JSON(http.StatusCreated, material)
+}
+
+// GetMaterialByID 获取材料记录详情
+func (c *ExaminationItemController) GetMaterialByID(ctx *gin.Context) {
+	id, err := strconv.ParseUint(ctx.Param("id"), 10, 32)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "无效的ID"})
+		return
+	}
+
+	material, err := c.itemService.GetMaterialByID(uint(id))
+	if err != nil {
+		ctx.JSON(http.StatusNotFound, gin.H{"error": "未找到记录"})
+		return
+	}
+
+	ctx.JSON(http.StatusOK, material)
+}
+
+// GetAllMaterials 获取材料记录列表
+func (c *ExaminationItemController) GetAllMaterials(ctx *gin.Context) {
+	materials, err := c.itemService.GetAllMaterials()
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	ctx.JSON(http.StatusOK, materials)
+}
+
+// UpdateMaterial 更新材料记录
+func (c *ExaminationItemController) UpdateMaterial(ctx *gin.Context) {
+	id, err := strconv.ParseUint(ctx.Param("id"), 10, 32)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "无效的ID"})
+		return
+	}
+
+	material, err := c.itemService.GetMaterialByID(uint(id))
+	if err != nil {
+		ctx.JSON(http.StatusNotFound, gin.H{"error": "未找到记录"})
+		return
+	}
+
+	if err := ctx.ShouldBindJSON(material); err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	if err := c.itemService.UpdateMaterial(material); err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	ctx.JSON(http.StatusOK, material)
+}
+
+// DeleteMaterial 删除材料记录
+func (c *ExaminationItemController) DeleteMaterial(ctx *gin.Context) {
+	id, err := strconv.ParseUint(ctx.Param("id"), 10, 32)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "无效的ID"})
+		return
+	}
+
+	if err := c.itemService.DeleteMaterial(uint(id)); err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	ctx.JSON(http.StatusOK, gin.H{"message": "记录删除成功"})
+}
+
+// AddMaterialToItem 向检查项目添加材料
+func (c *ExaminationItemController) AddMaterialToItem(ctx *gin.Context) {
+	itemID, err := strconv.ParseUint(ctx.Param("itemId"), 10, 32)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "无效的项目ID"})
+		return
+	}
+
+	materialID, err := strconv.ParseUint(ctx.Param("materialId"), 10, 32)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "无效的材料ID"})
+		return
+	}
+
+	var req struct {
+		Quantity int `json:"quantity"`
+	}
+	if err := ctx.ShouldBindJSON(&req); err != nil || req.Quantity <= 0 {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "无效的数量"})
+		return
+	}
+	quantity := req.Quantity
+
+	if err := c.itemService.AddMaterialToItem(uint(itemID), uint(materialID), quantity); err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	ctx.JSON(http.StatusOK, gin.H{"message": "材料添加成功"})
+}
+
+// RemoveMaterialFromItem 从检查项目中移除材料
+func (c *ExaminationItemController) RemoveMaterialFromItem(ctx *gin.Context) {
+	itemID, err := strconv.ParseUint(ctx.Param("itemId"), 10, 32)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "无效的项目ID"})
+		return
+	}
+
+	materialID, err := strconv.ParseUint(ctx.Param("materialId"), 10, 32)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "无效的材料ID"})
+		return
+	}
+
+	if err := c.itemService.RemoveMaterialFromItem(uint(itemID), uint(materialID)); err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	ctx.JSON(http.StatusOK, gin.H{"message": "材料移除成功"})
+}

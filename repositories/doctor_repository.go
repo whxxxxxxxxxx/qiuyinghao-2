@@ -30,7 +30,7 @@ func (r *doctorRepository) Create(doctor *models.Doctor) error {
 // FindByID 通过ID查找医生记录
 func (r *doctorRepository) FindByID(id uint) (*models.Doctor, error) {
 	var doctor models.Doctor
-	err := config.DB.First(&doctor, id).Error
+	err := config.DB.Preload("Department").First(&doctor, id).Error
 	return &doctor, err
 }
 
@@ -39,7 +39,7 @@ func (r *doctorRepository) FindAll(params map[string]interface{}, page, pageSize
 	var doctors []models.Doctor
 	var total int64
 
-	query := config.DB.Model(&models.Doctor{})
+	query := config.DB.Model(&models.Doctor{}).Preload("Department")
 
 	// 应用筛选条件
 	if params != nil {

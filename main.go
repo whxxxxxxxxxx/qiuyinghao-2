@@ -19,7 +19,14 @@ func main() {
 	config.ConnectDatabase(appConfig)
 
 	// 自动迁移数据库表结构
-	err := config.DB.AutoMigrate(&models.User{}, &models.Doctor{}, &models.MedicalExamination{}, &models.ExaminationItem{})
+	err := config.DB.AutoMigrate(
+		&models.User{},
+		&models.Doctor{},
+		&models.MedicalExamination{},
+		&models.ExaminationItem{},
+		&models.Material{},
+		&models.ExaminationItemMaterial{},
+	)
 	if err != nil {
 		log.Fatal("Failed to migrate database: ", err)
 	}
@@ -27,7 +34,7 @@ func main() {
 	// 创建Gin实例
 	router := gin.Default()
 	router.Use(cors.New(cors.Config{
-		AllowOrigins:     []string{"http://localhost:3000"}, // 您的前端应用地址
+		AllowOrigins:     []string{"*"}, // 允许所有来源
 		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
 		AllowHeaders:     []string{"Origin", "Content-Type", "Authorization"},
 		ExposeHeaders:    []string{"Content-Length"},

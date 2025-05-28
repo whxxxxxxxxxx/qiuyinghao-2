@@ -20,4 +20,10 @@ func SetupRoutes(router *gin.Engine) {
 
 	// 设置测试路由
 	SetupTestRoutes(router)
+
+	// 设置科室路由
+	SetupDepartmentRoutes(router)
+
+	// 设置医院运营看板路由
+	SetupDashboardRoutes(router)
 }
